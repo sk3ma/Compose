@@ -1,6 +1,9 @@
+# Compose version.
 version: '3'
 
+# Container definitions.
 services:
+
   # Portainer container.
   portainer:
     image: portainer/portainer-ce
