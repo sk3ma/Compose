@@ -1,4 +1,10 @@
 ---
+#######################################################################################
+# This Docker Compose file creates a Linux monitoring stack in Portainer.             #
+# Prometheus is used for monitoring and Grafana is used for visualization of metrics. #
+# Linux system monitoring and Docker container monitoring are also included.          #
+#######################################################################################
+
 # Compose version.
 version: '3'
 
@@ -73,17 +79,17 @@ services:
     networks:
       - monitoring-network
 
-  # Portainer agent.
-  portainer-agent:
-    image: portainer/agent:latest
-    container_name: portainer-agent
-    deploy:
-      mode: global
-    ports:
-      - 9001:9001
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/docker/volumes:/var/lib/docker/volumes
-    restart: unless-stopped
-    networks:
-      - monitoring-network
+#  # Portainer agent.
+#  portainer-agent:
+#    image: portainer/agent:latest
+#    container_name: portainer-agent
+#    deploy:
+#      mode: global
+#    ports:
+#      - 9001:9001
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - /var/lib/docker/volumes:/var/lib/docker/volumes
+#    restart: unless-stopped
+#    networks:
+#      - monitoring-network
