@@ -16,7 +16,7 @@ volumes:
 # Container definitions.
 services:
 
-  # Portainer container.
+  # Prometheus container.
   prometheus:
     image: prom/prometheus:v2.37.9
     container_name: prometheus
@@ -42,7 +42,7 @@ services:
     networks:
       - monitoring-network
 
-  # Node Exporter.
+  # Linux agent.
   node_exporter:
     image: quay.io/prometheus/node-exporter:v1.5.0
     container_name: node_exporter
