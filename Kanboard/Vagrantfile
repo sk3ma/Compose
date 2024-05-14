@@ -1,0 +1,52 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Defining Vagrant variables.
+VAG_CPU       = 3
+VAG_MEM       = 6144
+VAG_GUI       = false
+VAG_BOX       = "bento/ubuntu-22.04"
+VAG_NAME      = "awx.local"
+AWX_IP        = "192.168.56.70"
+
+# Defining Vagrant configuration.
+Vagrant.configure("2") do |config|
+  # Configuring hardware resources.
+  config.vm.provider "virtualbox" do |v|
+    v.memory = VAG_MEM
+    v.cpus   = VAG_CPU
+    v.gui    = VAG_GUI
+  end
+  # Defining Ubuntu server.
+  config.vm.define "awx" do |a|
+    a.vm.box              = VAG_BOX
+    a.vm.box_check_update = false
+    a.ssh.forward_agent   = true
+    a.vm.hostname         = VAG_NAME
+    # Defining the network.
+    a.vm.network "private_network", ip: AWX_IP
+  end
+  # Customizing Ubuntu environment.
+  config.vm.provision "shell", inline: <<-SHELL
+      echo -e "\e[32;1;3m[INFO] Updating system\e[m"
+      sudo apt update
+      echo -e "\e[32;1;3m[INFO] Installing Screenfetch\e[m"
+      sudo apt install screenfetch tree -y
+      echo '/usr/bin/screenfetch' >> /home/vagrant/.bashrc
+      sudo chmod a-x /etc/update-motd.d/00-header
+      sudo chmod a-x /etc/update-motd.d/99-bento
+      echo "export PS1='\\[\e]0;\\u@\\h: \\w\\a\\]\${debian_chroot:+(\$debian_chroot)}\\[\\033[01;36m\\]\\u\\[\\033[00m\\]\\[\\033[01;37m\\]@\\[\\033[00m\\]\\[\\033[01;35m\\]\\h\\[\\033[00m\\]\\[\\033[01;37m\\]:\\[\\033[00;34m\\]\\w\\[\\033[00m\\]\\$ '" >> /home/vagrant/.bashrc
+      echo -e "\e[32;1;3m[INFO] Installing Ansible\e[m"
+      sudo apt-add-repository ppa:ansible/ansible -y
+      sudo apt update && sudo apt install ansible vim -y
+       echo -e "\e[32;1;3m[INFO] Configuring Ansible\e[m"
+      sudo bash -c 'echo -e "[defaults]" >> /etc/ansible/ansible.cfg'
+      sudo bash -c 'echo -e "deprecation_warnings=false" >> /etc/ansible/ansible.cfg'
+      sudo bash -c 'echo -e "warnings=item_loop_collision" >> /etc/ansible/ansible.cfg'
+      sudo bash -c 'echo -e "inventory = /srv/ansible/inventory" >> /etc/ansible/ansible.cfg'
+      sudo mkdir -vp /srv/ansible
+      sudo bash -c 'echo -e "localhost ansible_connection=local" >> /srv/ansible/inventory'
+      echo -e "\e[36;1;3m[OK] System online...\e[m"
+  SHELL
+#  config.vm.provision "shell", path: "Docker.sh", privileged: true
+end

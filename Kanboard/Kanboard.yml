@@ -1,0 +1,49 @@
+version: '2'
+services:
+  # Define Kanboard container.
+  kanboard:
+    image: kanboard/kanboard:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - kanboard_data:/var/www/app/data
+      - kanboard_plugins:/var/www/app/plugins
+    environment:
+      - DB_DRIVER=mysql
+      - DB_USERNAME=osadmin
+      - DB_PASSWORD=BGT5QRT=
+      - DB_NAME=kanboard_db
+      - DB_HOST=localhost
+
+    depends_on:
+      - db
+  # Define reverse proxy.
+  nginx:
+    image: nginx:latest
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - kanboard
+
+ # Define dta store.
+  db:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=1q2w3e4r5t
+      - MYSQL_DATABASE=kanboard_db
+      - MYSQL_USER=osadmin
+      - MYSQL_PASSWORD=BGT5QRT=
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+# Define mount volumes.
+volumes:
+  kanboard_data:
+    driver: local
+  kanboard_plugins:
+    driver: local
+  mysql_data:
+    driver: local
