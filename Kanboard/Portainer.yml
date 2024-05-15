@@ -1,0 +1,94 @@
+---
+
+# Defining target section.
+- name: Install Docker and Portainer
+  hosts: localhost
+  gather_facts: true
+  become: true
+
+  # Defining variable section.
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  # Defining task section.
+  tasks:
+    - name: Installing Docker
+      ansible.builtin.debug:
+        msg: '[INFO] INSTALLING DOCKER...'
+  
+    - name: Installing packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - software-properties-common
+          - curl
+          - gnupg
+        state: latest
+        update_cache: true
+
+    - name: Adding key
+      ansible.builtin.apt_key:
+        url: "https://download.docker.com/linux/ubuntu/gpg"
+        state: present
+
+    - name: Adding repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+        state: present
+        filename: docker
+
+    - name: Updating system
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Installing Docker
+      ansible.builtin.apt:
+        name: docker-ce
+        state: present
+
+    - name: Installing pip
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
+
+    - name: Python library
+      ansible.builtin.pip:
+        name: docker
+        executable: pip
+
+    - name: Creating directory
+      ansible.builtin.file:
+        path: "/container"
+        state: directory
+        mode: 'u=rwx,g=rw,o=rw'
+
+    - name: Spawning container
+      ansible.builtin.debug:
+        msg: '[INFO] STARTING CONTAINER...'
+
+    - name: Install Portainer
+      ansible.builtin.docker_container:
+        name: portainer
+        image: portainer/portainer-ce:2.14.2
+        ports:
+          - "9443:9443"
+          - "8000:8000"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /container:/data
+        restart_policy: always
+
+    - name: End message
+      ansible.builtin.debug:
+        msg: '[OK] WebUI: https://192.168.56.70:9443.'
+
+# Defining handler section.
+  handlers:
+    - name: restart docker
+      ansible.builtin.systemd:
+        name: docker
+        state: restarted
+
+    - name: End playbook
+      ansible.builtin.meta: end_play
